@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "com.commandgui.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "AnvilScreenMixin",
+    "BookEditScreenMixin",
+    "ChatScreenMixin",
+    "InventoryScreenMixin",
+    "SignEditScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
