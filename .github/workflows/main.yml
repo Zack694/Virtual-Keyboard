@@ -21,12 +21,20 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: 'gradle'
+    
+    - name: Download Gradle Wrapper JAR
+      run: |
+        mkdir -p gradle/wrapper
+        curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.11.1/gradle/wrapper/gradle-wrapper.jar
         
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+    
+    - name: Download dependencies
+      run: ./gradlew --no-daemon dependencies
       
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew --no-daemon build
       
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
