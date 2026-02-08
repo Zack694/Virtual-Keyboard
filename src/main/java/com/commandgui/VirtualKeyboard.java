@@ -122,7 +122,7 @@ public class VirtualKeyboard {
                 final String keyFinal = key;
                 ButtonWidget button = new SilentButtonWidget(
                     currentX, currentY, btnWidth, keyHeight,
-                    displayText,
+                    Text.literal(displayText),
                     btn -> {
                         playCustomSound();
                         handleKeyPress(keyFinal);
@@ -241,7 +241,7 @@ public class VirtualKeyboard {
                         }
                     }
 
-                    btn.mouseClicked(new net.minecraft.client.input.Click(mouseX, mouseY, button), false);
+                    btn.mouseClicked(mouseX, mouseY, button);
                     return true;
                 }
             }
@@ -266,7 +266,7 @@ public class VirtualKeyboard {
 
             // Release all buttons
             for (ButtonWidget btn : keyButtons) {
-                btn.mouseReleased(new net.minecraft.client.input.Click(mouseX, mouseY, button));
+                btn.mouseReleased(mouseX, mouseY, button);
             }
 
             if (isDragging) {
@@ -343,8 +343,8 @@ public class VirtualKeyboard {
 
     // Custom ButtonWidget for 1.21.11
     private static class SilentButtonWidget extends ButtonWidget {
-        public SilentButtonWidget(int x, int y, int width, int height, String message, PressAction onPress) {
-            super(x, y, width, height, Text.literal(message), onPress, DEFAULT_NARRATION_SUPPLIER);
+        public SilentButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress) {
+            super(x, y, width, height, message, onPress, DEFAULT_NARRATION_SUPPLIER);
         }
 
         @Override
@@ -352,7 +352,10 @@ public class VirtualKeyboard {
             // Don't play default button sound
         }
 
-        // No abstract method needed - drawIcon was removed
+        @Override
+        protected void drawIcon(DrawContext context, int x, int y, float delta) {
+            // No icon needed for keyboard buttons
+        }
     }
 
     public int getX() { return x; }
