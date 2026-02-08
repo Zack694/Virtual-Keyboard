@@ -6,6 +6,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.input.Click;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -91,33 +92,36 @@ public abstract class ChatScreenMixin extends Screen {
         }
     }
     
+    // FIXED: Mixin intercept now uses Click record (1.21.11)
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
-    private void onMouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
+    private void onMouseClicked(Click click, boolean consumed, CallbackInfoReturnable<Boolean> cir) {
         if (virtualKeyboard != null) {
-            if (virtualKeyboard.mouseClicked(mouseX, mouseY, button)) {
+            if (virtualKeyboard.mouseClicked(click.mouseX(), click.mouseY(), click.button())) {
                 cir.setReturnValue(true);
             }
         }
     }
     
+    // FIXED: Override now uses Click record (1.21.11)
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(Click click) {
         if (virtualKeyboard != null) {
-            if (virtualKeyboard.mouseReleased(mouseX, mouseY, button)) {
+            if (virtualKeyboard.mouseReleased(click.mouseX(), click.mouseY(), click.button())) {
                 return true;
             }
         }
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(click);
     }
     
+    // FIXED: Override now uses Click record (1.21.11)
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+    public boolean mouseDragged(Click click, double deltaX, double deltaY) {
         if (virtualKeyboard != null) {
             ChatScreen screen = (ChatScreen) (Object) this;
-            if (virtualKeyboard.mouseDragged(mouseX, mouseY, button, deltaX, deltaY, screen.width, screen.height)) {
+            if (virtualKeyboard.mouseDragged(click.mouseX(), click.mouseY(), click.button(), deltaX, deltaY, screen.width, screen.height)) {
                 return true;
             }
         }
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        return super.mouseDragged(click, deltaX, deltaY);
     }
 }
