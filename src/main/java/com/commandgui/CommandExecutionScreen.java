@@ -160,31 +160,46 @@ public class CommandExecutionScreen extends Screen {
         }
     }
 
+    // FIXED for Minecraft 1.21.9+ API
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(Click click, boolean wasConsumed) {
+        double mouseX = click.x();
+        double mouseY = click.y();
+        int button = click.button();
+        
         if (virtualKeyboard != null && virtualKeyboard.mouseClicked(mouseX, mouseY, button)) {
             return true;
         }
 
-        commandField.mouseClicked(mouseX, mouseY, button);
-        valueField.mouseClicked(mouseX, mouseY, button);
-        return super.mouseClicked(mouseX, mouseY, button);
+        commandField.mouseClicked(click, false);
+        valueField.mouseClicked(click, false);
+        return super.mouseClicked(click, wasConsumed);
     }
 
+    // FIXED for Minecraft 1.21.9+ API
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(Click click) {
+        double mouseX = click.x();
+        double mouseY = click.y();
+        int button = click.button();
+        
         if (virtualKeyboard != null && virtualKeyboard.mouseReleased(mouseX, mouseY, button)) {
             return true;
         }
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(click);
     }
 
+    // FIXED for Minecraft 1.21.9+ API
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+    public boolean mouseDragged(Click click, double deltaX, double deltaY) {
+        double mouseX = click.x();
+        double mouseY = click.y();
+        int button = click.button();
+        
         if (virtualKeyboard != null && virtualKeyboard.mouseDragged(mouseX, mouseY, button, deltaX, deltaY, this.width, this.height)) {
             return true;
         }
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        return super.mouseDragged(click, deltaX, deltaY);
     }
 
     @Override
