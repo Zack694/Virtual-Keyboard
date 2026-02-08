@@ -222,7 +222,7 @@ public class VirtualKeyboard {
                 return true;
             }
             
-            // Check if clicking any key button
+            // Check if clicking any key button - use new 1.21.11 API
             for (ButtonWidget btn : keyButtons) {
                 if (btn.isMouseOver(mouseX, mouseY)) {
                     // Find which key was pressed
@@ -241,7 +241,8 @@ public class VirtualKeyboard {
                         }
                     }
                     
-                    btn.mouseClicked(mouseX, mouseY, button);
+                    // FIXED: 1.21.11 uses Click record
+                    btn.mouseClicked(new net.minecraft.client.input.Click(mouseX, mouseY, button), false);
                     return true;
                 }
             }
@@ -264,9 +265,9 @@ public class VirtualKeyboard {
             // Stop key repeat
             currentlyPressedKey = null;
             
-            // Release all buttons
+            // Release all buttons - FIXED: 1.21.11 uses Click record
             for (ButtonWidget btn : keyButtons) {
-                btn.mouseReleased(mouseX, mouseY, button);
+                btn.mouseReleased(new net.minecraft.client.input.Click(mouseX, mouseY, button));
             }
             
             if (isDragging) {
@@ -341,7 +342,7 @@ public class VirtualKeyboard {
         // Not needed anymore - ButtonWidget handles text rendering
     }
     
-    // Custom ButtonWidget that doesn't play sound
+    // FIXED: Custom ButtonWidget for 1.21.11 - must implement drawIcon
     private static class SilentButtonWidget extends ButtonWidget {
         public SilentButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress) {
             super(x, y, width, height, message, onPress, DEFAULT_NARRATION_SUPPLIER);
@@ -350,6 +351,12 @@ public class VirtualKeyboard {
         @Override
         public void playDownSound(SoundManager soundManager) {
             // Don't play default button sound
+        }
+        
+        // FIXED: New abstract method in 1.21.11 - PressableWidget requires this
+        @Override
+        protected void drawIcon(DrawContext context, int x, int y, float delta) {
+            // No icon needed for keyboard buttons
         }
     }
     
