@@ -127,34 +127,37 @@ public abstract class AnvilScreenMixin extends HandledScreen<ScreenHandler> {
         }
     }
 
+    // FIXED for Minecraft 1.21.9+ API
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(Click click, boolean wasConsumed) {
         if (virtualKeyboard != null && keyboardVisible) {
-            if (virtualKeyboard.mouseClicked(mouseX, mouseY, button)) {
+            if (virtualKeyboard.mouseClicked(click.x(), click.y(), click.button())) {
                 return true;
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, wasConsumed);
     }
 
+    // FIXED for Minecraft 1.21.9+ API
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(Click click) {
         if (virtualKeyboard != null && keyboardVisible) {
-            if (virtualKeyboard.mouseReleased(mouseX, mouseY, button)) {
+            if (virtualKeyboard.mouseReleased(click.x(), click.y(), click.button())) {
                 return true;
             }
         }
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(click);
     }
 
+    // FIXED for Minecraft 1.21.9+ API
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+    public boolean mouseDragged(Click click, double deltaX, double deltaY) {
         if (virtualKeyboard != null && keyboardVisible) {
             AnvilScreen screen = (AnvilScreen) (Object) this;
-            if (virtualKeyboard.mouseDragged(mouseX, mouseY, button, deltaX, deltaY, screen.width, screen.height)) {
+            if (virtualKeyboard.mouseDragged(click.x(), click.y(), click.button(), deltaX, deltaY, screen.width, screen.height)) {
                 return true;
             }
         }
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        return super.mouseDragged(click, deltaX, deltaY);
     }
 }
