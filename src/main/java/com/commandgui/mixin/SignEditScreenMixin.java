@@ -8,7 +8,6 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import net.minecraft.client.input.Click;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -16,31 +15,31 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(AbstractSignEditScreen.class)
 public abstract class SignEditScreenMixin extends Screen {
-    
+
     @Shadow private String[] messages;
     @Shadow private int currentRow;
-    
+
     @Unique
     private VirtualKeyboard virtualKeyboard;
-    
+
     @Unique
     private boolean keyboardVisible = true; // Default shown for signs
-    
+
     @Unique
     private ButtonWidget toggleButton;
-    
+
     protected SignEditScreenMixin() {
         super(null);
     }
-    
+
     @Inject(method = "init", at = @At("TAIL"))
     private void onInit(CallbackInfo ci) {
         AbstractSignEditScreen screen = (AbstractSignEditScreen) (Object) this;
-        
+
         // Initialize keyboard (same position as chat)
         int keyboardX = (screen.width - 325) / 2;
         int keyboardY = screen.height - 135;
-        
+
         virtualKeyboard = new VirtualKeyboard(keyboardX, keyboardY, new VirtualKeyboard.KeyboardListener() {
             @Override
             public void onKeyTyped(String key) {
@@ -52,7 +51,7 @@ public abstract class SignEditScreenMixin extends Screen {
                     }
                 }
             }
-            
+
             @Override
             public void onBackspace() {
                 if (messages != null && currentRow >= 0 && currentRow < messages.length) {
@@ -62,7 +61,7 @@ public abstract class SignEditScreenMixin extends Screen {
                     }
                 }
             }
-            
+
             @Override
             public void onEnter() {
                 // Move to next line (sign has 4 lines: 0-3)
@@ -78,11 +77,11 @@ public abstract class SignEditScreenMixin extends Screen {
                 }
             }
         }, screen);
-        
+
         // Add toggle button at top right corner
         int buttonX = this.width - 22;
         int buttonY = 2;
-        
+
         toggleButton = ButtonWidget.builder(
             Text.literal(keyboardVisible ? "H" : "S"),
             button -> {
@@ -90,24 +89,24 @@ public abstract class SignEditScreenMixin extends Screen {
                 button.setMessage(Text.literal(keyboardVisible ? "H" : "S"));
             }
         ).dimensions(buttonX, buttonY, 20, 20).build();
-        
+
         this.addDrawableChild(toggleButton);
     }
-    
+
     @Inject(method = "render", at = @At("HEAD"))
     private void onRenderStart(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (virtualKeyboard != null && keyboardVisible) {
             virtualKeyboard.tick();
         }
     }
-    
+
     @Inject(method = "render", at = @At("TAIL"))
     private void onRender(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (virtualKeyboard != null && keyboardVisible) {
             virtualKeyboard.render(context, mouseX, mouseY);
             virtualKeyboard.renderButtons(context, mouseX, mouseY, delta);
         }
-        
+
         // Draw tooltip
         if (toggleButton != null && toggleButton.isHovered()) {
             context.drawTooltip(
@@ -118,35 +117,35 @@ public abstract class SignEditScreenMixin extends Screen {
             );
         }
     }
-    
+
     @Override
-    public boolean mouseClicked(Click click, boolean consumed) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (virtualKeyboard != null && keyboardVisible) {
-            if (virtualKeyboard.mouseClicked(click.mouseX(), click.mouseY(), click.button())) {
+            if (virtualKeyboard.mouseClicked(mouseX, mouseY, button)) {
                 return true;
             }
         }
-        return super.mouseClicked(click, consumed);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
-    
+
     @Override
-    public boolean mouseReleased(Click click) {
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (virtualKeyboard != null && keyboardVisible) {
-            if (virtualKeyboard.mouseReleased(click.mouseX(), click.mouseY(), click.button())) {
+            if (virtualKeyboard.mouseReleased(mouseX, mouseY, button)) {
                 return true;
             }
         }
-        return super.mouseReleased(click);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
-    
+
     @Override
-    public boolean mouseDragged(Click click, double deltaX, double deltaY) {
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (virtualKeyboard != null && keyboardVisible) {
             AbstractSignEditScreen screen = (AbstractSignEditScreen) (Object) this;
-            if (virtualKeyboard.mouseDragged(click.mouseX(), click.mouseY(), click.button(), deltaX, deltaY, screen.width, screen.height)) {
+            if (virtualKeyboard.mouseDragged(mouseX, mouseY, button, deltaX, deltaY, screen.width, screen.height)) {
                 return true;
             }
         }
-        return super.mouseDragged(click, deltaX, deltaY);
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 }
