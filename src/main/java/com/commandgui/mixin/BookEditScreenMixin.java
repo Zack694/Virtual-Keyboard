@@ -11,7 +11,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import net.minecraft.client.input.Click;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -21,36 +20,36 @@ import java.util.List;
 
 @Mixin(BookEditScreen.class)
 public abstract class BookEditScreenMixin extends Screen {
-    
+
     @Shadow private int currentPage;
     @Shadow private List<String> pages;
-    
+
     @Unique
     private VirtualKeyboard virtualKeyboard;
-    
+
     @Unique
     private boolean keyboardVisible = false; // Default hidden
-    
+
     @Unique
     private ButtonWidget toggleButton;
-    
+
     @Unique
     private static final int MAX_PAGE_LENGTH = 1024; // Minecraft's page character limit
-    
+
     @Unique
     private TextFieldWidget titleField; // For signing mode
-    
+
     @Unique
     private boolean isSigningMode = false;
-    
+
     protected BookEditScreenMixin() {
         super(null);
     }
-    
+
     @Inject(method = "init", at = @At("TAIL"))
     private void onInit(CallbackInfo ci) {
         BookEditScreen screen = (BookEditScreen) (Object) this;
-        
+
         // Try to get the title field using reflection (for signing mode)
         try {
             Field titleFieldField = BookEditScreen.class.getDeclaredField("titleField");
@@ -62,11 +61,11 @@ public abstract class BookEditScreenMixin extends Screen {
             titleField = null;
             isSigningMode = false;
         }
-        
+
         // Initialize keyboard (same position as chat)
         int keyboardX = (this.width - 325) / 2;
         int keyboardY = this.height - 135;
-        
+
         virtualKeyboard = new VirtualKeyboard(keyboardX, keyboardY, new VirtualKeyboard.KeyboardListener() {
             @Override
             public void onKeyTyped(String key) {
@@ -77,7 +76,7 @@ public abstract class BookEditScreenMixin extends Screen {
                         Field maxLengthField = TextFieldWidget.class.getDeclaredField("maxLength");
                         maxLengthField.setAccessible(true);
                         int maxLength = maxLengthField.getInt(titleField);
-                        
+
                         if (titleField.getText().length() < maxLength) {
                             titleField.write(key);
                         }
@@ -106,7 +105,7 @@ public abstract class BookEditScreenMixin extends Screen {
                     }
                 }
             }
-            
+
             @Override
             public void onBackspace() {
                 if (isSigningMode && titleField != null && titleField.isFocused()) {
@@ -132,7 +131,7 @@ public abstract class BookEditScreenMixin extends Screen {
                     }
                 }
             }
-            
+
             @Override
             public void onEnter() {
                 if (isSigningMode && titleField != null && titleField.isFocused()) {
@@ -151,16 +150,16 @@ public abstract class BookEditScreenMixin extends Screen {
                 }
             }
         }, screen);
-        
+
         // Position button similar to anvil: relative to book GUI bounds
         // The book GUI is 192 pixels wide, centered on screen
         int bookLeft = (this.width - 192) / 2;
         int bookTop = (this.height - 192) / 2;
-        
+
         // Position at top-right corner of book GUI area (like anvil positioning)
         int buttonX = bookLeft + 192 - 22; // Right edge of book minus button width
         int buttonY = bookTop - 22; // Above the book GUI
-        
+
         toggleButton = ButtonWidget.builder(
             Text.literal(keyboardVisible ? "H" : "S"),
             button -> {
@@ -168,22 +167,22 @@ public abstract class BookEditScreenMixin extends Screen {
                 button.setMessage(Text.literal(keyboardVisible ? "H" : "S"));
             }
         ).dimensions(buttonX, buttonY, 20, 20).build();
-        
+
         this.addDrawableChild(toggleButton);
     }
-    
+
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         // Call parent render
         super.render(context, mouseX, mouseY, delta);
-        
+
         // Render keyboard after everything else (only if visible)
         if (virtualKeyboard != null && keyboardVisible) {
             virtualKeyboard.tick();
             virtualKeyboard.render(context, mouseX, mouseY);
             virtualKeyboard.renderButtons(context, mouseX, mouseY, delta);
         }
-        
+
         // Draw tooltip for toggle button
         if (toggleButton != null && toggleButton.isHovered()) {
             String tooltipText = keyboardVisible ? "Hide Keyboard" : "Show Keyboard";
@@ -198,34 +197,34 @@ public abstract class BookEditScreenMixin extends Screen {
             );
         }
     }
-    
+
     @Override
-    public boolean mouseClicked(Click click, boolean consumed) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (virtualKeyboard != null && keyboardVisible) {
-            if (virtualKeyboard.mouseClicked(click.mouseX(), click.mouseY(), click.button())) {
+            if (virtualKeyboard.mouseClicked(mouseX, mouseY, button)) {
                 return true;
             }
         }
-        return super.mouseClicked(click, consumed);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
-    
+
     @Override
-    public boolean mouseReleased(Click click) {
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (virtualKeyboard != null && keyboardVisible) {
-            if (virtualKeyboard.mouseReleased(click.mouseX(), click.mouseY(), click.button())) {
+            if (virtualKeyboard.mouseReleased(mouseX, mouseY, button)) {
                 return true;
             }
         }
-        return super.mouseReleased(click);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
-    
+
     @Override
-    public boolean mouseDragged(Click click, double deltaX, double deltaY) {
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (virtualKeyboard != null && keyboardVisible) {
-            if (virtualKeyboard.mouseDragged(click.mouseX(), click.mouseY(), click.button(), deltaX, deltaY, this.width, this.height)) {
+            if (virtualKeyboard.mouseDragged(mouseX, mouseY, button, deltaX, deltaY, this.width, this.height)) {
                 return true;
             }
         }
-        return super.mouseDragged(click, deltaX, deltaY);
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 }
