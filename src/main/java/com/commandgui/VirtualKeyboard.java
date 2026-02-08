@@ -12,12 +12,14 @@ import net.minecraft.client.sound.SoundManager;
 import net.minecraft.text.Text;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.Collections;
+import java.util.WeakHashMap;
 
 public class VirtualKeyboard {
 
-    // Marker interface to identify our keyboard buttons
-    public interface VirtualKeyboardButton {
-    }
+    // Track which buttons are keyboard buttons (for mixin to check)
+    public static final Set<ButtonWidget> KEYBOARD_BUTTONS = Collections.newSetFromMap(new WeakHashMap<>());
 
     private int x;
     private int y;
@@ -124,9 +126,9 @@ public class VirtualKeyboard {
                 // Get display text
                 String displayText = getDisplayText(key);
 
-                // Create button using builder, then wrap it with our marker
+                // Create button using builder
                 final String keyFinal = key;
-                ButtonWidget builtButton = ButtonWidget.builder(
+                ButtonWidget button = ButtonWidget.builder(
                     Text.literal(displayText),
                     btn -> {
                         playCustomSound();
@@ -136,8 +138,8 @@ public class VirtualKeyboard {
                 .dimensions(currentX, currentY, btnWidth, keyHeight)
                 .build();
                 
-                // Wrap it with our marker for sound suppression
-                ButtonWidget button = new KeyboardButtonWrapper(builtButton);
+                // Mark this as a keyboard button for sound suppression
+                KEYBOARD_BUTTONS.add(button);
 
                 keyButtons.add(button);
                 currentX += btnWidth + spacing;
@@ -363,45 +365,4 @@ public class VirtualKeyboard {
     public int getY() { return y; }
     public int getWidth() { return width; }
     public int getHeight() { return height; }
-
-    // Wrapper that delegates to the built button and implements our marker interface
-    private static class KeyboardButtonWrapper extends ButtonWidget implements VirtualKeyboardButton {
-        private final ButtonWidget delegate;
-        
-        public KeyboardButtonWrapper(ButtonWidget delegate) {
-            // Call super with the delegate's properties
-            super(
-                delegate.getX(), 
-                delegate.getY(), 
-                delegate.getWidth(), 
-                delegate.getHeight(),
-                delegate.getMessage(),
-                btn -> {}, // Empty - we use delegate's action
-                DEFAULT_NARRATION_SUPPLIER
-            );
-            this.delegate = delegate;
-        }
-
-        @Override
-        protected void drawIcon(DrawContext context, int x, int y, float delta) {
-            // No icon needed
-        }
-        
-        @Override
-        public boolean mouseClicked(Click click, boolean wasAlreadyHandled) {
-            return delegate.mouseClicked(click, wasAlreadyHandled);
-        }
-        
-        @Override
-        public boolean isMouseOver(double mouseX, double mouseY) {
-            return delegate.isMouseOver(mouseX, mouseY);
-        }
-        
-        // Delegate rendering to the built button's render method
-        @Override
-        protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-            // The delegate button handles all rendering
-            delegate.render(context, mouseX, mouseY, delta);
-        }
-    }
 }
