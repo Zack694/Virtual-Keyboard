@@ -9,7 +9,7 @@ import net.minecraft.client.gui.Click;
 import net.minecraft.client.input.MouseInput;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundManager;
-import net.minecraft.network.chat.Component;
+import net.minecraft.text.Text;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,11 +120,11 @@ public class VirtualKeyboard {
                 // Get display text
                 String displayText = getDisplayText(key);
 
-                // Create silent ButtonWidget for 1.21.11
+                // Create silent ButtonWidget for 1.21.11 Yarn mappings
                 final String keyFinal = key;
                 ButtonWidget button = new SilentButtonWidget(
                     currentX, currentY, btnWidth, keyHeight,
-                    Component.nullToEmpty(displayText),
+                    Text.literal(displayText),
                     btn -> {
                         playCustomSound();
                         handleKeyPress(keyFinal);
@@ -349,10 +349,10 @@ public class VirtualKeyboard {
         // Not needed anymore - ButtonWidget handles text rendering
     }
 
-    // Custom ButtonWidget for 1.21.11 that suppresses the default click sound
+    // Custom ButtonWidget for 1.21.11 Yarn mappings that suppresses the default click sound
     private static class SilentButtonWidget extends ButtonWidget {
-        public SilentButtonWidget(int x, int y, int width, int height, Component message, PressAction onPress) {
-            // Use the builder pattern internally
+        public SilentButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress) {
+            // Use the constructor with NarrationSupplier
             super(x, y, width, height, message, onPress, DEFAULT_NARRATION_SUPPLIER);
         }
 
