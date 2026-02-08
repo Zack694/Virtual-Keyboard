@@ -5,7 +5,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.AnvilScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.input.Click;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
@@ -20,29 +19,29 @@ import java.lang.reflect.Field;
 
 @Mixin(AnvilScreen.class)
 public abstract class AnvilScreenMixin extends HandledScreen<ScreenHandler> {
-    
+
     @Shadow private TextFieldWidget nameField;
-    
+
     @Unique
     private VirtualKeyboard virtualKeyboard;
-    
+
     @Unique
     private boolean keyboardVisible = false; // Default hidden in anvil
-    
+
     @Unique
     private ButtonWidget toggleButton;
-    
+
     @Unique
     private int maxLength = 50; // Default anvil max length
-    
+
     protected AnvilScreenMixin() {
         super(null, null, null);
     }
-    
+
     @Inject(method = "setup", at = @At("TAIL"))
     private void onSetup(CallbackInfo ci) {
         AnvilScreen screen = (AnvilScreen) (Object) this;
-        
+
         // Get max length using reflection
         try {
             Field maxLengthField = TextFieldWidget.class.getDeclaredField("maxLength");
@@ -51,14 +50,13 @@ public abstract class AnvilScreenMixin extends HandledScreen<ScreenHandler> {
         } catch (Exception e) {
             maxLength = 50; // Fallback to default
         }
-        
+
         // Initialize keyboard (same position as chat)
         int keyboardX = (this.width - 325) / 2;
         int keyboardY = this.height - 135;
-        
+
         virtualKeyboard = new VirtualKeyboard(keyboardX, keyboardY, new VirtualKeyboard.KeyboardListener() {
             @Override
-    // FIXED: New Click API for 1.21.11
             public void onKeyTyped(String key) {
                 if (nameField != null && !key.isEmpty()) {
                     // Check if adding this character would exceed max length
@@ -67,9 +65,8 @@ public abstract class AnvilScreenMixin extends HandledScreen<ScreenHandler> {
                     }
                 }
             }
-            
+
             @Override
-    // FIXED: New Click API for 1.21.11
             public void onBackspace() {
                 if (nameField != null && !nameField.getText().isEmpty()) {
                     int cursor = nameField.getCursor();
@@ -81,9 +78,8 @@ public abstract class AnvilScreenMixin extends HandledScreen<ScreenHandler> {
                     }
                 }
             }
-            
+
             @Override
-    // FIXED: New Click API for 1.21.11
             public void onEnter() {
                 // Just unfocus the field, don't close the screen
                 if (nameField != null) {
@@ -91,11 +87,11 @@ public abstract class AnvilScreenMixin extends HandledScreen<ScreenHandler> {
                 }
             }
         }, screen);
-        
+
         // Add toggle button at top right corner (hotbar slot size: 20x20)
         int buttonX = this.x + this.backgroundWidth - 22;
         int buttonY = this.y - 22;
-        
+
         toggleButton = ButtonWidget.builder(
             Text.literal(keyboardVisible ? "H" : "S"),
             button -> {
@@ -103,23 +99,22 @@ public abstract class AnvilScreenMixin extends HandledScreen<ScreenHandler> {
                 button.setMessage(Text.literal(keyboardVisible ? "H" : "S"));
             }
         ).dimensions(buttonX, buttonY, 20, 20).build();
-        
+
         this.addDrawableChild(toggleButton);
     }
-    
+
     @Override
-    // FIXED: New Click API for 1.21.11
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         // Call parent render
         super.render(context, mouseX, mouseY, delta);
-        
+
         // Render keyboard after everything else (only if visible)
         if (virtualKeyboard != null && keyboardVisible) {
             virtualKeyboard.tick();
             virtualKeyboard.render(context, mouseX, mouseY);
             virtualKeyboard.renderButtons(context, mouseX, mouseY, delta);
         }
-        
+
         // Draw tooltip for toggle button
         if (toggleButton != null && toggleButton.isHovered()) {
             context.drawTooltip(
@@ -130,38 +125,35 @@ public abstract class AnvilScreenMixin extends HandledScreen<ScreenHandler> {
             );
         }
     }
-    
+
     @Override
-    // FIXED: New Click API for 1.21.11
-    public boolean mouseClicked(Click click, boolean consumed) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (virtualKeyboard != null && keyboardVisible) {
-            if (virtualKeyboard.mouseClicked(click.mouseX(), click.mouseY(), click.button())) {
+            if (virtualKeyboard.mouseClicked(mouseX, mouseY, button)) {
                 return true;
             }
         }
-        return super.mouseClicked(click, consumed);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
-    
+
     @Override
-    // FIXED: New Click API for 1.21.11
-    public boolean mouseReleased(Click click) {
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (virtualKeyboard != null && keyboardVisible) {
-            if (virtualKeyboard.mouseReleased(click.mouseX(), click.mouseY(), click.button())) {
+            if (virtualKeyboard.mouseReleased(mouseX, mouseY, button)) {
                 return true;
             }
         }
-        return super.mouseReleased(click);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
-    
+
     @Override
-    // FIXED: New Click API for 1.21.11
-    public boolean mouseDragged(Click click, double deltaX, double deltaY) {
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (virtualKeyboard != null && keyboardVisible) {
             AnvilScreen screen = (AnvilScreen) (Object) this;
-            if (virtualKeyboard.mouseDragged(click.mouseX(), click.mouseY(), click.button(), deltaX, deltaY, screen.width, screen.height)) {
+            if (virtualKeyboard.mouseDragged(mouseX, mouseY, button, deltaX, deltaY, screen.width, screen.height)) {
                 return true;
             }
         }
-        return super.mouseDragged(click, deltaX, deltaY);
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 }
