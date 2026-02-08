@@ -5,7 +5,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.AbstractSignEditScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.input.Click;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -120,33 +119,33 @@ public abstract class SignEditScreenMixin extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean consumed) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (virtualKeyboard != null && keyboardVisible) {
-            if (virtualKeyboard.mouseClicked(click.mouseX(), click.mouseY(), click.button())) {
+            if (virtualKeyboard.mouseClicked(mouseX, mouseY, button)) {
                 return true;
             }
         }
-        return super.mouseClicked(click, consumed);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
-    public boolean mouseReleased(Click click) {
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (virtualKeyboard != null && keyboardVisible) {
-            if (virtualKeyboard.mouseReleased(click.mouseX(), click.mouseY(), click.button())) {
+            if (virtualKeyboard.mouseReleased(mouseX, mouseY, button)) {
                 return true;
             }
         }
-        return super.mouseReleased(click);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
-    public boolean mouseDragged(Click click, double deltaX, double deltaY) {
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (virtualKeyboard != null && keyboardVisible) {
             AbstractSignEditScreen screen = (AbstractSignEditScreen) (Object) this;
-            if (virtualKeyboard.mouseDragged(click.mouseX(), click.mouseY(), click.button(), deltaX, deltaY, screen.width, screen.height)) {
+            if (virtualKeyboard.mouseDragged(mouseX, mouseY, button, deltaX, deltaY, screen.width, screen.height)) {
                 return true;
             }
         }
-        return super.mouseDragged(click, deltaX, deltaY);
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 }
