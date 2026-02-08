@@ -5,47 +5,46 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.input.CharInput;
-import net.minecraft.client.input.Click;
 import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 
 public class CommandExecutionScreen extends Screen {
-    
+
     private int guiWidth = 176;
     private int guiHeight = 100;
-    
+
     private TextFieldWidget commandField;
     private TextFieldWidget valueField;
     private VirtualKeyboard virtualKeyboard;
-    
+
     public CommandExecutionScreen() {
         super(Text.literal("Command Executor"));
     }
-    
+
     @Override
     protected void init() {
         int x = (this.width - guiWidth) / 2;
         int y = (this.height - guiHeight) / 2;
-        
+
         // Command field
         commandField = new TextFieldWidget(this.textRenderer, x + 8, y + 20, 160, 16, Text.literal("Command"));
         commandField.setMaxLength(256);
         commandField.setPlaceholder(Text.literal("e.g., gamerule keepInventory"));
         this.addSelectableChild(commandField);
         this.setInitialFocus(commandField);
-        
+
         // Value field
         valueField = new TextFieldWidget(this.textRenderer, x + 8, y + 42, 160, 16, Text.literal("Value"));
         valueField.setMaxLength(256);
         valueField.setPlaceholder(Text.literal("e.g., true or 64"));
         this.addSelectableChild(valueField);
-        
+
         // Confirm button
         this.addDrawableChild(ButtonWidget.builder(
             Text.literal("Confirm"),
             button -> executeCommand()
         ).dimensions(x + 8, y + 76, 78, 20).build());
-        
+
         // Back button
         this.addDrawableChild(ButtonWidget.builder(
             Text.literal("Back"),
@@ -55,11 +54,11 @@ public class CommandExecutionScreen extends Screen {
                 }
             }
         ).dimensions(x + 90, y + 76, 78, 20).build());
-        
+
         // Initialize virtual keyboard (310px wide now)
         int keyboardX = (this.width - 310) / 2;
         int keyboardY = y + guiHeight + 10;
-        
+
         virtualKeyboard = new VirtualKeyboard(keyboardX, keyboardY, new VirtualKeyboard.KeyboardListener() {
             @Override
             public void onKeyTyped(String key) {
@@ -68,7 +67,7 @@ public class CommandExecutionScreen extends Screen {
                     focused.write(key);
                 }
             }
-            
+
             @Override
             public void onBackspace() {
                 TextFieldWidget focused = getFocusedTextField();
@@ -82,33 +81,33 @@ public class CommandExecutionScreen extends Screen {
                     }
                 }
             }
-            
+
             @Override
             public void onEnter() {
                 executeCommand();
             }
         }, this);
     }
-    
+
     private TextFieldWidget getFocusedTextField() {
         if (commandField.isFocused()) return commandField;
         if (valueField.isFocused()) return valueField;
         return null;
     }
-    
+
     private void executeCommand() {
         String command = commandField.getText().trim();
         String value = valueField.getText().trim();
-        
+
         if (command.isEmpty()) {
             return;
         }
-        
+
         CommandPackets.sendCommandPacket(command, value);
-        
+
         commandField.setText("");
         valueField.setText("");
-        
+
         if (this.client != null && this.client.player != null) {
             String fullCommand = command;
             if (!value.isEmpty()) {
@@ -117,7 +116,7 @@ public class CommandExecutionScreen extends Screen {
             this.client.player.sendMessage(Text.literal("§aCommand sent to server: /" + fullCommand), false);
         }
     }
-    
+
     @Override
     public void tick() {
         super.tick();
@@ -126,82 +125,67 @@ public class CommandExecutionScreen extends Screen {
             virtualKeyboard.tick();
         }
     }
-    
+
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         this.renderBackground(context, mouseX, mouseY, delta);
-        
+
         int x = (this.width - guiWidth) / 2;
         int y = (this.height - guiHeight) / 2;
-        
+
         // Draw GUI background panel
         context.fill(x, y, x + guiWidth, y + guiHeight, 0xFFC6C6C6);
-        
+
         // Draw border
         context.fill(x - 2, y - 2, x + guiWidth + 2, y, 0xFF373737);
         context.fill(x - 2, y + guiHeight, x + guiWidth + 2, y + guiHeight + 2, 0xFF373737);
         context.fill(x - 2, y, x, y + guiHeight, 0xFF373737);
         context.fill(x + guiWidth, y, x + guiWidth + 2, y + guiHeight, 0xFF373737);
-        
+
         // Render widgets FIRST
         super.render(context, mouseX, mouseY, delta);
-        
+
         // Draw title AFTER
         context.drawText(this.textRenderer, "Command Executor", x + 8, y + 6, 0x404040, true);
-        
+
         // Draw text fields
         commandField.render(context, mouseX, mouseY, delta);
         valueField.render(context, mouseX, mouseY, delta);
-        
+
         // Render virtual keyboard
         if (virtualKeyboard != null) {
             virtualKeyboard.render(context, mouseX, mouseY);
             virtualKeyboard.renderButtons(context, mouseX, mouseY, delta);
         }
     }
-    
-    // FIXED: New Click-based API for 1.21.11
+
     @Override
-    public boolean mouseClicked(Click click, boolean consumed) {
-        double mouseX = click.mouseX();
-        double mouseY = click.mouseY();
-        int button = click.button();
-        
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (virtualKeyboard != null && virtualKeyboard.mouseClicked(mouseX, mouseY, button)) {
             return true;
         }
-        
-        commandField.mouseClicked(click, consumed);
-        valueField.mouseClicked(click, consumed);
-        return super.mouseClicked(click, consumed);
+
+        commandField.mouseClicked(mouseX, mouseY, button);
+        valueField.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
-    
-    // FIXED: New Click-based API for 1.21.11
+
     @Override
-    public boolean mouseReleased(Click click) {
-        double mouseX = click.mouseX();
-        double mouseY = click.mouseY();
-        int button = click.button();
-        
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (virtualKeyboard != null && virtualKeyboard.mouseReleased(mouseX, mouseY, button)) {
             return true;
         }
-        return super.mouseReleased(click);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
-    
-    // FIXED: New Click-based API for 1.21.11
+
     @Override
-    public boolean mouseDragged(Click click, double deltaX, double deltaY) {
-        double mouseX = click.mouseX();
-        double mouseY = click.mouseY();
-        int button = click.button();
-        
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (virtualKeyboard != null && virtualKeyboard.mouseDragged(mouseX, mouseY, button, deltaX, deltaY, this.width, this.height)) {
             return true;
         }
-        return super.mouseDragged(click, deltaX, deltaY);
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
-    
+
     // FIXED: New KeyInput-based API for 1.21.11
     @Override
     public boolean keyPressed(KeyInput keyInput) {
@@ -213,7 +197,7 @@ public class CommandExecutionScreen extends Screen {
         }
         return super.keyPressed(keyInput);
     }
-    
+
     // FIXED: New CharInput-based API for 1.21.11
     @Override
     public boolean charTyped(CharInput charInput) {
@@ -225,7 +209,7 @@ public class CommandExecutionScreen extends Screen {
         }
         return super.charTyped(charInput);
     }
-    
+
     @Override
     public boolean shouldPause() {
         return false;
