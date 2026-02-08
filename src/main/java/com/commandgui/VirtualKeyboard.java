@@ -9,7 +9,7 @@ import net.minecraft.client.gui.Click;
 import net.minecraft.client.input.MouseInput;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundManager;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,16 +120,15 @@ public class VirtualKeyboard {
                 // Get display text
                 String displayText = getDisplayText(key);
 
-                // Create ButtonWidget with NO SOUND - Fixed for 1.21.11
+                // Create silent ButtonWidget for 1.21.11
                 final String keyFinal = key;
                 ButtonWidget button = new SilentButtonWidget(
                     currentX, currentY, btnWidth, keyHeight,
-                    Text.literal(displayText),
+                    Component.nullToEmpty(displayText),
                     btn -> {
                         playCustomSound();
                         handleKeyPress(keyFinal);
-                    },
-                    ButtonWidget.DEFAULT_NARRATION_SUPPLIER
+                    }
                 );
 
                 keyButtons.add(button);
@@ -350,15 +349,16 @@ public class VirtualKeyboard {
         // Not needed anymore - ButtonWidget handles text rendering
     }
 
-    // Custom ButtonWidget for 1.21.11
+    // Custom ButtonWidget for 1.21.11 that suppresses the default click sound
     private static class SilentButtonWidget extends ButtonWidget {
-        public SilentButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress, NarrationSupplier narrationSupplier) {
-            super(x, y, width, height, message, onPress, narrationSupplier);
+        public SilentButtonWidget(int x, int y, int width, int height, Component message, PressAction onPress) {
+            // Use the builder pattern internally
+            super(x, y, width, height, message, onPress, DEFAULT_NARRATION_SUPPLIER);
         }
 
         @Override
         public void playDownSound(SoundManager soundManager) {
-            // Don't play default button sound
+            // Don't play default button sound - we play our custom sound instead
         }
 
         @Override
