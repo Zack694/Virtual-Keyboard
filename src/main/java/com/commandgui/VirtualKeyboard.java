@@ -122,7 +122,7 @@ public class VirtualKeyboard {
 
                 // Create ButtonWidget using builder pattern for 1.21.11 Yarn
                 final String keyFinal = key;
-                ButtonWidget baseButton = ButtonWidget.builder(
+                ButtonWidget button = ButtonWidget.builder(
                     Text.literal(displayText),
                     btn -> {
                         playCustomSound();
@@ -131,9 +131,6 @@ public class VirtualKeyboard {
                 )
                 .dimensions(currentX, currentY, btnWidth, keyHeight)
                 .build();
-                
-                // Wrap it to suppress the default sound
-                ButtonWidget button = new SilentButtonWrapper(baseButton);
 
                 keyButtons.add(button);
                 currentX += btnWidth + spacing;
@@ -179,6 +176,8 @@ public class VirtualKeyboard {
             }
         }
     }
+
+
 
     public void render(DrawContext context, int mouseX, int mouseY) {
         // Draw main panel background
@@ -351,51 +350,6 @@ public class VirtualKeyboard {
 
     public void renderText(DrawContext context, TextRenderer textRenderer, int mouseX, int mouseY) {
         // Not needed anymore - ButtonWidget handles text rendering
-    }
-
-    // Wrapper for ButtonWidget that suppresses the default click sound
-    private static class SilentButtonWrapper extends ButtonWidget {
-        private final ButtonWidget wrapped;
-        
-        public SilentButtonWrapper(ButtonWidget wrapped) {
-            // Call super with dummy values - we'll delegate everything to wrapped
-            super(wrapped.getX(), wrapped.getY(), wrapped.getWidth(), wrapped.getHeight(), 
-                  wrapped.getMessage(), btn -> {}, DEFAULT_NARRATION_SUPPLIER);
-            this.wrapped = wrapped;
-        }
-
-        @Override
-        public void playDownSound(SoundManager soundManager) {
-            // Don't play default button sound - the parent handler plays custom sound
-        }
-
-        @Override
-        protected void drawIcon(DrawContext context, int x, int y, float delta) {
-            // Delegate to wrapped button if it has an icon
-            if (wrapped instanceof ButtonWidget) {
-                // No icon for keyboard keys
-            }
-        }
-        
-        @Override
-        public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-            wrapped.render(context, mouseX, mouseY, delta);
-        }
-        
-        @Override
-        public boolean mouseClicked(Click click, boolean wasAlreadyHandled) {
-            return wrapped.mouseClicked(click, wasAlreadyHandled);
-        }
-        
-        @Override
-        public void mouseReleased(Click click) {
-            wrapped.mouseReleased(click);
-        }
-        
-        @Override
-        public boolean isMouseOver(double mouseX, double mouseY) {
-            return wrapped.isMouseOver(mouseX, mouseY);
-        }
     }
 
     public int getX() { return x; }
