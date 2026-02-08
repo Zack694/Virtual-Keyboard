@@ -124,16 +124,20 @@ public class VirtualKeyboard {
                 // Get display text
                 String displayText = getDisplayText(key);
 
-                // Create our custom keyboard button for 1.21.11 Yarn
+                // Create button using builder, then wrap it with our marker
                 final String keyFinal = key;
-                ButtonWidget button = new KeyboardButton(
-                    currentX, currentY, btnWidth, keyHeight,
+                ButtonWidget builtButton = ButtonWidget.builder(
                     Text.literal(displayText),
                     btn -> {
                         playCustomSound();
                         handleKeyPress(keyFinal);
                     }
-                );
+                )
+                .dimensions(currentX, currentY, btnWidth, keyHeight)
+                .build();
+                
+                // Wrap it with our marker for sound suppression
+                ButtonWidget button = new KeyboardButtonWrapper(builtButton);
 
                 keyButtons.add(button);
                 currentX += btnWidth + spacing;
@@ -360,15 +364,44 @@ public class VirtualKeyboard {
     public int getWidth() { return width; }
     public int getHeight() { return height; }
 
-    // Custom button class for keyboard keys - implements marker interface
-    private static class KeyboardButton extends ButtonWidget.Text implements VirtualKeyboardButton {
-        public KeyboardButton(int x, int y, int width, int height, Text message, PressAction onPress) {
-            super(x, y, width, height, message, onPress, DEFAULT_NARRATION_SUPPLIER);
+    // Wrapper that delegates to the built button and implements our marker interface
+    private static class KeyboardButtonWrapper extends ButtonWidget implements VirtualKeyboardButton {
+        private final ButtonWidget delegate;
+        
+        public KeyboardButtonWrapper(ButtonWidget delegate) {
+            // Call super with the delegate's properties
+            super(
+                delegate.getX(), 
+                delegate.getY(), 
+                delegate.getWidth(), 
+                delegate.getHeight(),
+                delegate.getMessage(),
+                btn -> {}, // Empty - we use delegate's action
+                DEFAULT_NARRATION_SUPPLIER
+            );
+            this.delegate = delegate;
         }
 
         @Override
         protected void drawIcon(DrawContext context, int x, int y, float delta) {
-            // No icon to draw for keyboard keys
+            // No icon needed
+        }
+        
+        @Override
+        public boolean mouseClicked(Click click, boolean wasAlreadyHandled) {
+            return delegate.mouseClicked(click, wasAlreadyHandled);
+        }
+        
+        @Override
+        public boolean isMouseOver(double mouseX, double mouseY) {
+            return delegate.isMouseOver(mouseX, mouseY);
+        }
+        
+        // Delegate rendering to the built button's render method
+        @Override
+        protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+            // The delegate button handles all rendering
+            delegate.render(context, mouseX, mouseY, delta);
         }
     }
 }
