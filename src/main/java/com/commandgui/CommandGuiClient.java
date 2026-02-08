@@ -24,12 +24,12 @@ public class CommandGuiClient implements ClientModInitializer {
             CommandPackets.ExecuteCommandPayload.CODEC
         );
         
-        // Register keybinding
+        // Register keybinding - Category is now KeyBinding.Category.MISC enum
         openGuiKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
             "key.commandgui.open",
             InputUtil.Type.KEYSYM,
             GLFW.GLFW_KEY_K,
-            "category.commandgui"
+            KeyBinding.Category.MISC // CHANGED: String to Category enum
         ));
         
         // Register tick event for keybind
