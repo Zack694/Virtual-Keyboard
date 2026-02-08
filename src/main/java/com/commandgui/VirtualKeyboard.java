@@ -122,7 +122,7 @@ public class VirtualKeyboard {
                 final String keyFinal = key;
                 ButtonWidget button = new SilentButtonWidget(
                     currentX, currentY, btnWidth, keyHeight,
-                    Text.literal(displayText),
+                    displayText,
                     btn -> {
                         playCustomSound();
                         handleKeyPress(keyFinal);
@@ -241,7 +241,7 @@ public class VirtualKeyboard {
                         }
                     }
 
-                    btn.mouseClicked(mouseX, mouseY, button);
+                    btn.mouseClicked(new net.minecraft.client.input.Click(mouseX, mouseY, button), false);
                     return true;
                 }
             }
@@ -266,7 +266,7 @@ public class VirtualKeyboard {
 
             // Release all buttons
             for (ButtonWidget btn : keyButtons) {
-                btn.mouseReleased(mouseX, mouseY, button);
+                btn.mouseReleased(new net.minecraft.client.input.Click(mouseX, mouseY, button));
             }
 
             if (isDragging) {
@@ -341,10 +341,10 @@ public class VirtualKeyboard {
         // Not needed anymore - ButtonWidget handles text rendering
     }
 
-    // FIXED: Custom ButtonWidget for 1.21.11 - must implement drawIcon
+    // Custom ButtonWidget for 1.21.11
     private static class SilentButtonWidget extends ButtonWidget {
-        public SilentButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress) {
-            super(x, y, width, height, message, onPress, DEFAULT_NARRATION_SUPPLIER);
+        public SilentButtonWidget(int x, int y, int width, int height, String message, PressAction onPress) {
+            super(x, y, width, height, Text.literal(message), onPress, DEFAULT_NARRATION_SUPPLIER);
         }
 
         @Override
@@ -352,11 +352,7 @@ public class VirtualKeyboard {
             // Don't play default button sound
         }
 
-        // FIXED: New abstract method in 1.21.11 - PressableWidget requires this
-        @Override
-        protected void drawIcon(DrawContext context, int x, int y, float delta) {
-            // No icon needed for keyboard buttons
-        }
+        // No abstract method needed - drawIcon was removed
     }
 
     public int getX() { return x; }
