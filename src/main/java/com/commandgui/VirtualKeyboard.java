@@ -128,7 +128,8 @@ public class VirtualKeyboard {
                     btn -> {
                         playCustomSound();
                         handleKeyPress(keyFinal);
-                    }
+                    },
+                    ButtonWidget.DEFAULT_NARRATION_SUPPLIER
                 );
 
                 keyButtons.add(button);
@@ -351,13 +352,18 @@ public class VirtualKeyboard {
 
     // Custom ButtonWidget for 1.21.11
     private static class SilentButtonWidget extends ButtonWidget {
-        public SilentButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress) {
-            super(x, y, width, height, message, onPress, DEFAULT_NARRATION_SUPPLIER);
+        public SilentButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress, NarrationSupplier narrationSupplier) {
+            super(x, y, width, height, message, onPress, narrationSupplier);
         }
 
         @Override
         public void playDownSound(SoundManager soundManager) {
             // Don't play default button sound
+        }
+
+        @Override
+        protected void drawIcon(DrawContext context, int x, int y, float delta) {
+            // No icon to draw for keyboard keys
         }
     }
 
