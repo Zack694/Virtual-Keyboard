@@ -119,11 +119,11 @@ public class VirtualKeyboard {
                 // Get display text
                 String displayText = getDisplayText(key);
 
-                // Create ButtonWidget with NO SOUND
+                // Create ButtonWidget with NO SOUND - Fixed for 1.21.11
                 final String keyFinal = key;
                 ButtonWidget button = new SilentButtonWidget(
                     currentX, currentY, btnWidth, keyHeight,
-                    Text.literal(displayText),
+                    ButtonWidget.Text.literal(displayText),
                     btn -> {
                         playCustomSound();
                         handleKeyPress(keyFinal);
@@ -213,6 +213,7 @@ public class VirtualKeyboard {
         }
     }
 
+    // FIXED for Minecraft 1.21.9+ API
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
             // Check if clicking drag bar
@@ -242,7 +243,9 @@ public class VirtualKeyboard {
                         }
                     }
 
-                    btn.mouseClicked(mouseX, mouseY, button);
+                    // Use new API - create Click object
+                    Click click = new Click(mouseX, mouseY, button);
+                    btn.mouseClicked(click, false);
                     return true;
                 }
             }
@@ -260,14 +263,16 @@ public class VirtualKeyboard {
                !key.equals("MENU");
     }
 
+    // FIXED for Minecraft 1.21.9+ API
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (button == 0) {
             // Stop key repeat
             currentlyPressedKey = null;
 
-            // Release all buttons
+            // Release all buttons - use new API
+            Click click = new Click(mouseX, mouseY, button);
             for (ButtonWidget btn : keyButtons) {
-                btn.mouseReleased(mouseX, mouseY, button);
+                btn.mouseReleased(click);
             }
 
             if (isDragging) {
@@ -342,9 +347,9 @@ public class VirtualKeyboard {
         // Not needed anymore - ButtonWidget handles text rendering
     }
 
-    // Custom ButtonWidget for 1.21.11
+    // Custom ButtonWidget for 1.21.11 - FIXED
     private static class SilentButtonWidget extends ButtonWidget {
-        public SilentButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress) {
+        public SilentButtonWidget(int x, int y, int width, int height, ButtonWidget.Text message, PressAction onPress) {
             super(x, y, width, height, message, onPress, DEFAULT_NARRATION_SUPPLIER);
         }
 
