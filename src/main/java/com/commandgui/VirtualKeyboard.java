@@ -15,6 +15,10 @@ import java.util.List;
 
 public class VirtualKeyboard {
 
+    // Marker interface to identify our keyboard buttons
+    public interface VirtualKeyboardButton {
+    }
+
     private int x;
     private int y;
     private int width = 325;
@@ -120,17 +124,16 @@ public class VirtualKeyboard {
                 // Get display text
                 String displayText = getDisplayText(key);
 
-                // Create ButtonWidget using builder pattern for 1.21.11 Yarn
+                // Create our custom keyboard button for 1.21.11 Yarn
                 final String keyFinal = key;
-                ButtonWidget button = ButtonWidget.builder(
+                ButtonWidget button = new KeyboardButton(
+                    currentX, currentY, btnWidth, keyHeight,
                     Text.literal(displayText),
                     btn -> {
                         playCustomSound();
                         handleKeyPress(keyFinal);
                     }
-                )
-                .dimensions(currentX, currentY, btnWidth, keyHeight)
-                .build();
+                );
 
                 keyButtons.add(button);
                 currentX += btnWidth + spacing;
@@ -356,4 +359,16 @@ public class VirtualKeyboard {
     public int getY() { return y; }
     public int getWidth() { return width; }
     public int getHeight() { return height; }
+
+    // Custom button class for keyboard keys - implements marker interface
+    private static class KeyboardButton extends ButtonWidget.Text implements VirtualKeyboardButton {
+        public KeyboardButton(int x, int y, int width, int height, Text message, PressAction onPress) {
+            super(x, y, width, height, message, onPress, DEFAULT_NARRATION_SUPPLIER);
+        }
+
+        @Override
+        protected void drawIcon(DrawContext context, int x, int y, float delta) {
+            // No icon to draw for keyboard keys
+        }
+    }
 }
