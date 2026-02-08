@@ -214,16 +214,6 @@ public class VirtualKeyboard {
         }
     }
 
-    // FIXED for Minecraft 1.21.11 - Convert int button to MouseInput enum
-    private MouseInput getMouseInput(int button) {
-        return switch (button) {
-            case 0 -> MouseInput.LEFT;
-            case 1 -> MouseInput.RIGHT;
-            case 2 -> MouseInput.MIDDLE;
-            default -> MouseInput.LEFT; // Fallback
-        };
-    }
-
     // FIXED for Minecraft 1.21.11 API
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
@@ -254,8 +244,9 @@ public class VirtualKeyboard {
                         }
                     }
 
-                    // Use new API - create Click object with MouseInput enum
-                    Click click = new Click(mouseX, mouseY, getMouseInput(button));
+                    // Use new API - MouseInput is a record: new MouseInput(int button, int modifiers)
+                    // modifiers = 0 for no modifiers (no shift/ctrl/alt held)
+                    Click click = new Click(mouseX, mouseY, new MouseInput(button, 0));
                     btn.mouseClicked(click, false);
                     return true;
                 }
@@ -280,8 +271,8 @@ public class VirtualKeyboard {
             // Stop key repeat
             currentlyPressedKey = null;
 
-            // Release all buttons - use new API with MouseInput enum
-            Click click = new Click(mouseX, mouseY, getMouseInput(button));
+            // Release all buttons - use new API
+            Click click = new Click(mouseX, mouseY, new MouseInput(button, 0));
             for (ButtonWidget btn : keyButtons) {
                 btn.mouseReleased(click);
             }
@@ -358,7 +349,7 @@ public class VirtualKeyboard {
         // Not needed anymore - ButtonWidget handles text rendering
     }
 
-    // Custom ButtonWidget for 1.21.11 - FIXED
+    // Custom ButtonWidget for 1.21.11
     private static class SilentButtonWidget extends ButtonWidget {
         public SilentButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress) {
             super(x, y, width, height, message, onPress, DEFAULT_NARRATION_SUPPLIER);
@@ -367,11 +358,6 @@ public class VirtualKeyboard {
         @Override
         public void playDownSound(SoundManager soundManager) {
             // Don't play default button sound
-        }
-
-        @Override
-        protected void drawIcon(DrawContext context, int x, int y, float delta) {
-            // No icon needed for keyboard buttons
         }
     }
 
