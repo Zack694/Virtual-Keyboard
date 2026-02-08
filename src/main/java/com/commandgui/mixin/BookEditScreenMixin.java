@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.BookEditScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.input.Click;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -199,32 +200,32 @@ public abstract class BookEditScreenMixin extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(Click click, boolean consumed) {
         if (virtualKeyboard != null && keyboardVisible) {
-            if (virtualKeyboard.mouseClicked(mouseX, mouseY, button)) {
+            if (virtualKeyboard.mouseClicked(click.mouseX(), click.mouseY(), click.button())) {
                 return true;
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, consumed);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(Click click) {
         if (virtualKeyboard != null && keyboardVisible) {
-            if (virtualKeyboard.mouseReleased(mouseX, mouseY, button)) {
+            if (virtualKeyboard.mouseReleased(click.mouseX(), click.mouseY(), click.button())) {
                 return true;
             }
         }
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(click);
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+    public boolean mouseDragged(Click click, double deltaX, double deltaY) {
         if (virtualKeyboard != null && keyboardVisible) {
-            if (virtualKeyboard.mouseDragged(mouseX, mouseY, button, deltaX, deltaY, this.width, this.height)) {
+            if (virtualKeyboard.mouseDragged(click.mouseX(), click.mouseY(), click.button(), deltaX, deltaY, this.width, this.height)) {
                 return true;
             }
         }
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        return super.mouseDragged(click, deltaX, deltaY);
     }
 }
