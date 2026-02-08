@@ -5,7 +5,6 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.input.CharInput;
-import net.minecraft.client.input.Click;
 import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 
@@ -161,45 +160,32 @@ public class CommandExecutionScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean consumed) {
-        double mouseX = click.mouseX();
-        double mouseY = click.mouseY();
-        int button = click.button();
-
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (virtualKeyboard != null && virtualKeyboard.mouseClicked(mouseX, mouseY, button)) {
             return true;
         }
 
-        commandField.mouseClicked(click, consumed);
-        valueField.mouseClicked(click, consumed);
-        return super.mouseClicked(click, consumed);
+        commandField.mouseClicked(mouseX, mouseY, button);
+        valueField.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
-    public boolean mouseReleased(Click click) {
-        double mouseX = click.mouseX();
-        double mouseY = click.mouseY();
-        int button = click.button();
-
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (virtualKeyboard != null && virtualKeyboard.mouseReleased(mouseX, mouseY, button)) {
             return true;
         }
-        return super.mouseReleased(click);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
-    public boolean mouseDragged(Click click, double deltaX, double deltaY) {
-        double mouseX = click.mouseX();
-        double mouseY = click.mouseY();
-        int button = click.button();
-
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (virtualKeyboard != null && virtualKeyboard.mouseDragged(mouseX, mouseY, button, deltaX, deltaY, this.width, this.height)) {
             return true;
         }
-        return super.mouseDragged(click, deltaX, deltaY);
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
-    // New Click API for 1.21.11
     @Override
     public boolean keyPressed(KeyInput keyInput) {
         if (commandField.isFocused() || valueField.isFocused()) {
@@ -211,7 +197,6 @@ public class CommandExecutionScreen extends Screen {
         return super.keyPressed(keyInput);
     }
 
-    // New CharInput API for 1.21.11
     @Override
     public boolean charTyped(CharInput charInput) {
         if (commandField.isFocused()) {
