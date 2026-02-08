@@ -6,6 +6,7 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.Click;
+import net.minecraft.client.input.MouseInput;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundManager;
 import net.minecraft.text.Text;
@@ -123,7 +124,7 @@ public class VirtualKeyboard {
                 final String keyFinal = key;
                 ButtonWidget button = new SilentButtonWidget(
                     currentX, currentY, btnWidth, keyHeight,
-                    ButtonWidget.Text.literal(displayText),
+                    Text.literal(displayText),
                     btn -> {
                         playCustomSound();
                         handleKeyPress(keyFinal);
@@ -213,7 +214,17 @@ public class VirtualKeyboard {
         }
     }
 
-    // FIXED for Minecraft 1.21.9+ API
+    // FIXED for Minecraft 1.21.11 - Convert int button to MouseInput enum
+    private MouseInput getMouseInput(int button) {
+        return switch (button) {
+            case 0 -> MouseInput.LEFT;
+            case 1 -> MouseInput.RIGHT;
+            case 2 -> MouseInput.MIDDLE;
+            default -> MouseInput.LEFT; // Fallback
+        };
+    }
+
+    // FIXED for Minecraft 1.21.11 API
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
             // Check if clicking drag bar
@@ -243,8 +254,8 @@ public class VirtualKeyboard {
                         }
                     }
 
-                    // Use new API - create Click object
-                    Click click = new Click(mouseX, mouseY, button);
+                    // Use new API - create Click object with MouseInput enum
+                    Click click = new Click(mouseX, mouseY, getMouseInput(button));
                     btn.mouseClicked(click, false);
                     return true;
                 }
@@ -263,14 +274,14 @@ public class VirtualKeyboard {
                !key.equals("MENU");
     }
 
-    // FIXED for Minecraft 1.21.9+ API
+    // FIXED for Minecraft 1.21.11 API
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (button == 0) {
             // Stop key repeat
             currentlyPressedKey = null;
 
-            // Release all buttons - use new API
-            Click click = new Click(mouseX, mouseY, button);
+            // Release all buttons - use new API with MouseInput enum
+            Click click = new Click(mouseX, mouseY, getMouseInput(button));
             for (ButtonWidget btn : keyButtons) {
                 btn.mouseReleased(click);
             }
@@ -349,7 +360,7 @@ public class VirtualKeyboard {
 
     // Custom ButtonWidget for 1.21.11 - FIXED
     private static class SilentButtonWidget extends ButtonWidget {
-        public SilentButtonWidget(int x, int y, int width, int height, ButtonWidget.Text message, PressAction onPress) {
+        public SilentButtonWidget(int x, int y, int width, int height, Text message, PressAction onPress) {
             super(x, y, width, height, message, onPress, DEFAULT_NARRATION_SUPPLIER);
         }
 
