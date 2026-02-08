@@ -1,3 +1,4 @@
+
 package com.commandgui.mixin;
 
 import com.commandgui.VirtualKeyboard;
@@ -13,8 +14,8 @@ public class ButtonWidgetMixin {
     
     @Inject(method = "playDownSound", at = @At("HEAD"), cancellable = true)
     private void suppressKeyboardButtonSound(SoundManager soundManager, CallbackInfo ci) {
-        // Only suppress sound if this button is from our virtual keyboard
-        if (this instanceof VirtualKeyboard.VirtualKeyboardButton) {
+        // Check if this button is in our keyboard buttons set
+        if (VirtualKeyboard.KEYBOARD_BUTTONS.contains(this)) {
             ci.cancel(); // Suppress the default sound - custom sound plays in the callback
         }
     }
