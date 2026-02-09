@@ -57,7 +57,7 @@ public abstract class ChatScreenMixin extends Screen {
                     if (cursor > 0 && currentText.length() > 0) {
                         String newText = currentText.substring(0, cursor - 1) + currentText.substring(cursor);
                         chatField.setText(newText);
-                        chatField.setCursor(cursor - 1);
+                        chatField.setCursor(cursor - 1, false);
                     }
                 }
             }
@@ -67,7 +67,6 @@ public abstract class ChatScreenMixin extends Screen {
                 if (chatField != null) {
                     String text = chatField.getText().trim();
                     if (!text.isEmpty()) {
-                        MinecraftClient client = MinecraftClient.getInstance();
                         if (client != null && client.player != null) {
                             // Properly distinguish between commands and chat messages
                             if (text.startsWith("/")) {
