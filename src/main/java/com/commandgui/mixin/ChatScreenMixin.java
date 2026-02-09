@@ -23,9 +23,6 @@ public abstract class ChatScreenMixin extends Screen {
     @Unique
     private VirtualKeyboard virtualKeyboard;
 
-    @Unique
-    private boolean keyboardVisible = false; // Default hidden
-
     protected ChatScreenMixin(Text title) {
         super(title);
     }
@@ -75,6 +72,8 @@ public abstract class ChatScreenMixin extends Screen {
                                 client.player.networkHandler.sendChatMessage(text);
                             }
                         }
+                        // Clear the chat field after sending
+                        chatField.setText("");
                         if (client != null) {
                             client.setScreen(null);
                         }
@@ -82,17 +81,18 @@ public abstract class ChatScreenMixin extends Screen {
                 }
             }
         }, screen);
-
-        // Make keyboard visible by default
-        keyboardVisible = true;
     }
 
-    @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta);
-
-        if (virtualKeyboard != null && keyboardVisible) {
+    @Inject(method = "render", at = @At("HEAD"))
+    private void onRenderStart(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+        if (virtualKeyboard != null) {
             virtualKeyboard.tick();
+        }
+    }
+
+    @Inject(method = "render", at = @At("TAIL"))
+    private void onRender(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+        if (virtualKeyboard != null) {
             virtualKeyboard.render(context, mouseX, mouseY);
             virtualKeyboard.renderButtons(context, mouseX, mouseY, delta);
         }
@@ -100,7 +100,7 @@ public abstract class ChatScreenMixin extends Screen {
 
     @Override
     public boolean mouseReleased(Click click) {
-        if (virtualKeyboard != null && keyboardVisible) {
+        if (virtualKeyboard != null) {
             if (virtualKeyboard.mouseReleased(click.x(), click.y(), click.button())) {
                 return true;
             }
@@ -110,7 +110,7 @@ public abstract class ChatScreenMixin extends Screen {
 
     @Override
     public boolean mouseDragged(Click click, double deltaX, double deltaY) {
-        if (virtualKeyboard != null && keyboardVisible) {
+        if (virtualKeyboard != null) {
             if (virtualKeyboard.mouseDragged(click.x(), click.y(), click.button(), deltaX, deltaY, this.width, this.height)) {
                 return true;
             }
@@ -120,7 +120,7 @@ public abstract class ChatScreenMixin extends Screen {
 
     @Override
     public boolean mouseClicked(Click click, boolean wasAlreadyHandled) {
-        if (virtualKeyboard != null && keyboardVisible) {
+        if (virtualKeyboard != null) {
             if (virtualKeyboard.mouseClicked(click.x(), click.y(), click.button())) {
                 return true;
             }
