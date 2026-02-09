@@ -229,38 +229,41 @@ public class VirtualKeyboard {
     // FIXED for Minecraft 1.21.11 API
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
-            // Check if clicking drag bar
-            if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + 16) {
-                isDragging = true;
-                dragOffsetX = (int)(mouseX - x);
-                dragOffsetY = (int)(mouseY - y);
-                return true;
-            }
+            // Only handle clicks if they're within the keyboard bounds
+            if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
+                // Check if clicking drag bar
+                if (mouseY >= y && mouseY <= y + 16) {
+                    isDragging = true;
+                    dragOffsetX = (int)(mouseX - x);
+                    dragOffsetY = (int)(mouseY - y);
+                    return true;
+                }
 
-            // Check if clicking any key button
-            for (ButtonWidget btn : keyButtons) {
-                if (btn.isMouseOver(mouseX, mouseY)) {
-                    // Find which key was pressed
-                    for (int i = 0; i < KEYBOARD_LAYOUT.length; i++) {
-                        for (int j = 0; j < KEYBOARD_LAYOUT[i].length; j++) {
-                            if (keyButtons.indexOf(btn) >= 0) {
-                                String key = KEYBOARD_LAYOUT[Math.min(i, KEYBOARD_LAYOUT.length - 1)][Math.min(j, KEYBOARD_LAYOUT[i].length - 1)];
-                                // Only start repeat for keys that should repeat
-                                if (shouldKeyRepeat(key)) {
-                                    currentlyPressedKey = key;
-                                    keyPressStartTime = System.currentTimeMillis();
-                                    lastRepeatTime = keyPressStartTime;
+                // Check if clicking any key button
+                for (ButtonWidget btn : keyButtons) {
+                    if (btn.isMouseOver(mouseX, mouseY)) {
+                        // Find which key was pressed
+                        for (int i = 0; i < KEYBOARD_LAYOUT.length; i++) {
+                            for (int j = 0; j < KEYBOARD_LAYOUT[i].length; j++) {
+                                if (keyButtons.indexOf(btn) >= 0) {
+                                    String key = KEYBOARD_LAYOUT[Math.min(i, KEYBOARD_LAYOUT.length - 1)][Math.min(j, KEYBOARD_LAYOUT[i].length - 1)];
+                                    // Only start repeat for keys that should repeat
+                                    if (shouldKeyRepeat(key)) {
+                                        currentlyPressedKey = key;
+                                        keyPressStartTime = System.currentTimeMillis();
+                                        lastRepeatTime = keyPressStartTime;
+                                    }
+                                    break;
                                 }
-                                break;
                             }
                         }
-                    }
 
-                    // Use new API - MouseInput is a record: new MouseInput(int button, int modifiers)
-                    // modifiers = 0 for no modifiers (no shift/ctrl/alt held)
-                    Click click = new Click(mouseX, mouseY, new MouseInput(button, 0));
-                    btn.mouseClicked(click, false);
-                    return true;
+                        // Use new API - MouseInput is a record: new MouseInput(int button, int modifiers)
+                        // modifiers = 0 for no modifiers (no shift/ctrl/alt held)
+                        Click click = new Click(mouseX, mouseY, new MouseInput(button, 0));
+                        btn.mouseClicked(click, false);
+                        return true;
+                    }
                 }
             }
         }
