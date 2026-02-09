@@ -64,15 +64,21 @@ public abstract class ChatScreenMixin extends Screen {
 
             @Override
             public void onEnter() {
-                if (chatField != null && !chatField.getText().isEmpty()) {
-                    // Send the chat message
-                    String message = chatField.getText();
-                    if (client != null && client.player != null) {
-                        client.player.networkHandler.sendChatMessage(message);
-                    }
-                    // Close the chat screen
-                    if (client != null) {
-                        client.setScreen(null);
+                if (chatField != null) {
+                    String text = chatField.getText().trim();
+                    if (!text.isEmpty()) {
+                        MinecraftClient client = MinecraftClient.getInstance();
+                        if (client != null && client.player != null) {
+                            // Properly distinguish between commands and chat messages
+                            if (text.startsWith("/")) {
+                                client.player.networkHandler.sendChatCommand(text.substring(1));
+                            } else {
+                                client.player.networkHandler.sendChatMessage(text);
+                            }
+                        }
+                        if (client != null) {
+                            client.setScreen(null);
+                        }
                     }
                 }
             }
