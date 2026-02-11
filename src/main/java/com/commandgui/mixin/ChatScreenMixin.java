@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ChatScreen.class)
 public abstract class ChatScreenMixin extends Screen {
@@ -98,6 +99,15 @@ public abstract class ChatScreenMixin extends Screen {
         }
     }
 
+    @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
+    private void onMouseClicked(Click click, boolean wasAlreadyHandled, CallbackInfoReturnable<Boolean> cir) {
+        if (virtualKeyboard != null) {
+            if (virtualKeyboard.mouseClicked(click.x(), click.y(), click.button())) {
+                cir.setReturnValue(true);
+            }
+        }
+    }
+
     @Override
     public boolean mouseReleased(Click click) {
         if (virtualKeyboard != null) {
@@ -116,15 +126,5 @@ public abstract class ChatScreenMixin extends Screen {
             }
         }
         return super.mouseDragged(click, deltaX, deltaY);
-    }
-
-    @Override
-    public boolean mouseClicked(Click click, boolean wasAlreadyHandled) {
-        if (virtualKeyboard != null) {
-            if (virtualKeyboard.mouseClicked(click.x(), click.y(), click.button())) {
-                return true;
-            }
-        }
-        return super.mouseClicked(click, wasAlreadyHandled);
     }
 }
